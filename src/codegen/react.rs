@@ -1,5 +1,5 @@
 use swc_ecmascript::{
-    ast::{ImportDecl, Module, ModuleItem},
+    ast::{ClassDecl, ExportDecl, FnDecl, Function, ImportDecl, Module, ModuleItem, NamedExport},
     common::Span,
 };
 #[derive(Debug, PartialEq, Eq)]
@@ -18,7 +18,7 @@ impl ReactCodgen {
         } = mods.clone();
         Self { span, body, mods }
     }
-    pub fn parse_import(&self, import: ImportDecl) -> String {
+    fn parse_import(&self, import: ImportDecl) -> String {
         let mut stri = String::new();
         let ImportDecl {
             span,
@@ -56,6 +56,50 @@ impl ReactCodgen {
         stri = stri + " from \"" + &src.value + "\";";
         stri
     }
+    fn parse_function(&self, fndecl: FnDecl) -> String {
+        let mut mstring = String::new();
+        let FnDecl {
+            ident,
+            declare,
+            function,
+        } = fndecl;
+        mstring = mstring + "export default function " + &ident.sym + "(" + ")" + "{";
+        let Function {
+            params,
+            decorators,
+            span,
+            body,
+            is_generator,
+            is_async,
+            type_params,
+            return_type,
+        } = function;
+        
+        mstring = mstring + "}";
+        mstring
+    }
+    /// TODO: Complete this after all the functions for parsing is completed (lazy rn)
+    fn parse_export(&self, export: ExportDecl) -> String {
+        #[allow(unused)]
+        let mut mstring = String::new();
+        #[allow(unused)]
+        let ExportDecl { span, decl } = export;
+        match decl {
+            swc_ecmascript::ast::Decl::Class(_) => {
+                todo!()
+            }
+            swc_ecmascript::ast::Decl::Fn(fndecl) => {
+                mstring = mstring + &self.parse_function(fndecl);
+            }
+            swc_ecmascript::ast::Decl::Var(_) => todo!(),
+            swc_ecmascript::ast::Decl::TsInterface(_) => todo!(),
+            swc_ecmascript::ast::Decl::TsTypeAlias(_) => todo!(),
+            swc_ecmascript::ast::Decl::TsEnum(_) => todo!(),
+            swc_ecmascript::ast::Decl::TsModule(_) => todo!(),
+        };
+        #[allow(unused)]
+        mstring
+    }
     pub fn parse_react(&self) -> String {
         let mut mstring = String::new();
         let Module {
@@ -69,8 +113,19 @@ impl ReactCodgen {
                     swc_ecmascript::ast::ModuleDecl::Import(importdecl) => {
                         mstring = mstring + &self.parse_import(importdecl.to_owned())
                     }
-                    swc_ecmascript::ast::ModuleDecl::ExportDecl(_) => todo!(),
-                    swc_ecmascript::ast::ModuleDecl::ExportNamed(_) => todo!(),
+                    swc_ecmascript::ast::ModuleDecl::ExportDecl(e) => {
+                        mstring = mstring + &self.parse_export(e.to_owned());
+                    }
+                    swc_ecmascript::ast::ModuleDecl::ExportNamed(b) => {
+                        let NamedExport {
+                            span,
+                            specifiers,
+                            src,
+                            type_only,
+                            asserts,
+                        } = b;
+                        todo!()
+                    }
                     swc_ecmascript::ast::ModuleDecl::ExportDefaultDecl(_) => todo!(),
                     swc_ecmascript::ast::ModuleDecl::ExportDefaultExpr(_) => todo!(),
                     swc_ecmascript::ast::ModuleDecl::ExportAll(_) => todo!(),
