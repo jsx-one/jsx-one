@@ -12,4 +12,4 @@ readme="README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-swc_ecmascript = {git="https://github.com/jsx-one/parser.git", features=["parser"], version="0.46.0"}
+swc_ecmascript = {path="src/parser", features=["parser"], version="0.46.0"}
