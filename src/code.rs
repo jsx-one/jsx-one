@@ -1,4 +1,4 @@
-use swc_ecmascript::common::{
+use swc_common::{
     errors::{ColorConfig, Handler},
     sync::Lrc,
     FileName, SourceMap,
