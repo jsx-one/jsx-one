@@ -2,6 +2,12 @@
 name = "jsx-one"
 version = "0.1.0"
 edition = "2018"
+license-file = "LICENSE"
+description= "1 Code base, 10 frameworks"
+homepage="https://github.com/jsx-one/jsx-one"
+documentation="https://github.com/jsx-one/jsx-one"
+repository="https://github.com/jsx-one/jsx-one"
+readme="README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

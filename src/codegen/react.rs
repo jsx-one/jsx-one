@@ -1,5 +1,8 @@
 use swc_ecmascript::{
-    ast::{ClassDecl, ExportDecl, FnDecl, Function, ImportDecl, Module, ModuleItem, NamedExport},
+    ast::{
+        ClassDecl, Decl, ExportDecl, FnDecl, Function, ImportDecl, Module, ModuleItem, NamedExport,
+        Param,
+    },
     common::Span,
 };
 #[derive(Debug, PartialEq, Eq)]
@@ -56,6 +59,17 @@ impl ReactCodgen {
         stri = stri + " from \"" + &src.value + "\";";
         stri
     }
+    fn parse_param(param: &Vec<Param>) -> String {
+        let mut mstring = String::new();
+        for parm in param.iter() {
+            let Param {
+                span,
+                decorators,
+                pat,
+            } = parm;
+        }
+        mstring
+    }
     fn parse_function(&self, fndecl: FnDecl) -> String {
         let mut mstring = String::new();
         let FnDecl {
@@ -63,7 +77,7 @@ impl ReactCodgen {
             declare,
             function,
         } = fndecl;
-        mstring = mstring + "export default function " + &ident.sym + "(" + ")" + "{";
+        mstring = mstring + "export default function " + &ident.sym + "(";
         let Function {
             params,
             decorators,
@@ -74,15 +88,14 @@ impl ReactCodgen {
             type_params,
             return_type,
         } = function;
-        
+
+        mstring = mstring + ")" + "{";
         mstring = mstring + "}";
         mstring
     }
     /// TODO: Complete this after all the functions for parsing is completed (lazy rn)
     fn parse_export(&self, export: ExportDecl) -> String {
-        #[allow(unused)]
         let mut mstring = String::new();
-        #[allow(unused)]
         let ExportDecl { span, decl } = export;
         match decl {
             swc_ecmascript::ast::Decl::Class(_) => {
@@ -97,7 +110,19 @@ impl ReactCodgen {
             swc_ecmascript::ast::Decl::TsEnum(_) => todo!(),
             swc_ecmascript::ast::Decl::TsModule(_) => todo!(),
         };
-        #[allow(unused)]
+        mstring
+    }
+    fn parse_decl(&self, decl: &Decl) -> String {
+        let mut mstring = String::new();
+        match decl {
+            Decl::Class(_) => todo!(),
+            Decl::Fn(e) => mstring = mstring + &self.parse_function(e.to_owned()),
+            Decl::Var(_) => todo!(),
+            Decl::TsInterface(_) => todo!(),
+            Decl::TsTypeAlias(_) => todo!(),
+            Decl::TsEnum(_) => todo!(),
+            Decl::TsModule(_) => todo!(),
+        }
         mstring
     }
     pub fn parse_react(&self) -> String {
@@ -151,7 +176,9 @@ impl ReactCodgen {
                     swc_ecmascript::ast::Stmt::For(_) => todo!(),
                     swc_ecmascript::ast::Stmt::ForIn(_) => todo!(),
                     swc_ecmascript::ast::Stmt::ForOf(_) => todo!(),
-                    swc_ecmascript::ast::Stmt::Decl(_) => todo!(),
+                    swc_ecmascript::ast::Stmt::Decl(decl) => {
+                        mstring = mstring + &self.parse_decl(decl);
+                    }
                     swc_ecmascript::ast::Stmt::Expr(_) => todo!(),
                 },
             };

@@ -4,6 +4,7 @@ fn main() {
     let st = "
     
     function maingobrr(abc: oMG){
+        
         let i = \"\"
     }
     ";

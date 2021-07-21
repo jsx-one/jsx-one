@@ -33,6 +33,5 @@ pub fn code(st: &str) {
         .expect("Failed to parse module.");
     let reactcodegen = ReactCodgen::new(module.clone());
     let i = reactcodegen.parse_react();
-    println!("{} {:#?}", i, &module)
-
+    println!(" {:#?} {}", &module, i)
 }
