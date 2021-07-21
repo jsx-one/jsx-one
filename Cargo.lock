@@ -199,6 +199,7 @@ dependencies = [
 name = "jsx-one"
 version = "0.0.1"
 dependencies = [
+ "swc_common",
  "swc_ecmascript",
 ]
 
