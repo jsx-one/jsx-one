@@ -7,6 +7,7 @@ use swc_common::{
 use swc_ecmascript::parser::{lexer::Lexer, Capturing, Parser, StringInput, Syntax};
 
 use crate::codegen::react::ReactCodgen;
+
 pub fn code(st: &str) {
     let cm: Lrc<SourceMap> = Default::default();
     let handler = Handler::with_tty_emitter(ColorConfig::Auto, true, false, Some(cm.clone()));

@@ -4,8 +4,7 @@ fn main() {
     let st = "
     
     function maingobrr(abc: oMG){
-        
-        let i = \"\"
+        let i: number = \"ad\"
     }
     ";
     code::code(st)

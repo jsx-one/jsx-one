@@ -14,7 +14,6 @@ readme="README.md"
 [dependencies]
 swc_ecmascript = {path="src/parser", features=["parser"], version="0.46.0"}
 swc_common = {version="0.11.0", path="./src/parser/common", features=["tty-emitter"]}
-
 [profile.release]
 opt-level = 'z'
 lto = true
