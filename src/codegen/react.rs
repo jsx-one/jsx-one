@@ -28,9 +28,9 @@ impl Helper {
         let mut mstring = String::new();
         match *tstype {
             TsType::TsKeywordType(a) => match a.kind {
-                TsKeywordTypeKind::TsAnyKeyword => mstring = mstring + "any",
+                TsKeywordTypeKind::TsAnyKeyword => mstring = format!("{}any", mstring),
                 TsKeywordTypeKind::TsUnknownKeyword => todo!(),
-                TsKeywordTypeKind::TsNumberKeyword => mstring = mstring + "number",
+                TsKeywordTypeKind::TsNumberKeyword => mstring = format!("{}number", mstring),
                 TsKeywordTypeKind::TsObjectKeyword => todo!(),
                 TsKeywordTypeKind::TsBooleanKeyword => todo!(),
                 TsKeywordTypeKind::TsBigIntKeyword => todo!(),
@@ -141,7 +141,7 @@ impl ReactCodgen {
         let mut mstring = String::new();
         let BlockStmt { span, stmts } = block;
         for i in stmts {
-            mstring = mstring + &self.parse_stmt(i);
+            mstring = format!("{}{}", mstring, &self.parse_stmt(i));
         }
         mstring
     }
@@ -152,7 +152,7 @@ impl ReactCodgen {
             declare,
             function,
         } = fndecl;
-        mstring = mstring + "export default function " + &ident.sym + "(";
+        mstring = format!("{}export default function {}(", mstring, &ident.sym,);
         let Function {
             params,
             decorators,
@@ -163,17 +163,17 @@ impl ReactCodgen {
             type_params,
             return_type,
         } = function;
-        mstring = mstring + &self.parse_param(&params);
-        mstring = mstring + ")" + "{";
+        mstring = format!("{}{}", mstring, &self.parse_param(&params));
+        mstring = format!("{}){{", mstring);
 
         match body {
             Some(a) => {
-                mstring = mstring + "\n";
-                mstring = mstring + &self.parse_block(a);
+                mstring = format!("{}\n", mstring);
+                mstring = format!("{}{}", mstring, &self.parse_block(a));
             }
             None => todo!(),
         }
-        mstring = mstring + "}";
+        mstring = format!("{}}}", mstring);
         mstring
     }
     fn parse_var_decl(&self, vardecl: VarDeclarator) -> String {
@@ -186,7 +186,7 @@ impl ReactCodgen {
         } = vardecl;
         match name {
             swc_ecmascript::ast::Pat::Ident(a) => {
-                mstring = mstring + &self.helper.parse_bindingident(a);
+                mstring = format!("{}{}", mstring, &self.helper.parse_bindingident(a));
             }
             swc_ecmascript::ast::Pat::Array(_) => todo!(),
             swc_ecmascript::ast::Pat::Rest(_) => todo!(),
@@ -206,28 +206,12 @@ impl ReactCodgen {
             decls,
         } = var;
         match kind {
-            VarDeclKind::Var => mstring = mstring + "var",
-            VarDeclKind::Let => mstring = mstring + "let",
-            VarDeclKind::Const => mstring = mstring + "const",
+            VarDeclKind::Var => mstring = format!("{}var", mstring),
+            VarDeclKind::Let => mstring = format!("{}let", mstring),
+            VarDeclKind::Const => mstring = format!("{}const", mstring),
         }
         for i in decls.iter() {
-            let VarDeclarator {
-                span,
-                name,
-                init,
-                definite,
-            } = i;
-            match name {
-                swc_ecmascript::ast::Pat::Ident(a) => {
-                    mstring = mstring + &self.helper.parse_bindingident(a.to_owned())
-                }
-                swc_ecmascript::ast::Pat::Array(_) => todo!(),
-                swc_ecmascript::ast::Pat::Rest(_) => todo!(),
-                swc_ecmascript::ast::Pat::Object(_) => todo!(),
-                swc_ecmascript::ast::Pat::Assign(_) => todo!(),
-                swc_ecmascript::ast::Pat::Invalid(_) => todo!(),
-                swc_ecmascript::ast::Pat::Expr(_) => todo!(),
-            }
+            mstring = format!("{}{}", mstring, self.parse_var_decl(i.to_owned()));
         }
         mstring
     }
@@ -240,9 +224,11 @@ impl ReactCodgen {
                 todo!()
             }
             swc_ecmascript::ast::Decl::Fn(fndecl) => {
-                mstring = mstring + &self.parse_function(fndecl);
+                mstring = format!("{}{}", mstring, &self.parse_function(fndecl));
             }
-            swc_ecmascript::ast::Decl::Var(s) => mstring = mstring + &self.parse_var(s),
+            swc_ecmascript::ast::Decl::Var(s) => {
+                mstring = format!("{}{}", mstring, &self.parse_var(s))
+            }
             swc_ecmascript::ast::Decl::TsInterface(_) => todo!(),
             swc_ecmascript::ast::Decl::TsTypeAlias(_) => todo!(),
             swc_ecmascript::ast::Decl::TsEnum(_) => todo!(),
@@ -254,8 +240,8 @@ impl ReactCodgen {
         let mut mstring = String::new();
         match decl {
             Decl::Class(_) => todo!(),
-            Decl::Fn(e) => mstring = mstring + &self.parse_function(e.to_owned()),
-            Decl::Var(a) => mstring = mstring + &self.parse_var(a.to_owned()),
+            Decl::Fn(e) => mstring = format!("{}{}", mstring, &self.parse_function(e.to_owned())),
+            Decl::Var(a) => mstring = format!("{}{}", mstring, &self.parse_var(a.to_owned())),
             Decl::TsInterface(_) => todo!(),
             Decl::TsTypeAlias(_) => todo!(),
             Decl::TsEnum(_) => todo!(),
@@ -284,7 +270,7 @@ impl ReactCodgen {
             swc_ecmascript::ast::Stmt::ForIn(_) => todo!(),
             swc_ecmascript::ast::Stmt::ForOf(_) => todo!(),
             swc_ecmascript::ast::Stmt::Decl(decl) => {
-                mstring = mstring + &self.parse_decl(&decl);
+                mstring = format!("{}{}", mstring, &self.parse_decl(&decl));
             }
             swc_ecmascript::ast::Stmt::Expr(_) => todo!(),
         }
@@ -301,10 +287,11 @@ impl ReactCodgen {
             match bo {
                 swc_ecmascript::ast::ModuleItem::ModuleDecl(modecl) => match modecl {
                     swc_ecmascript::ast::ModuleDecl::Import(importdecl) => {
-                        mstring = mstring + &self.parse_import(importdecl.to_owned())
+                        mstring =
+                            format!("{}{}", mstring, &self.parse_import(importdecl.to_owned()))
                     }
                     swc_ecmascript::ast::ModuleDecl::ExportDecl(e) => {
-                        mstring = mstring + &self.parse_export(e.to_owned());
+                        mstring = format!("{}{}", mstring, &self.parse_export(e.to_owned()));
                     }
                     swc_ecmascript::ast::ModuleDecl::ExportNamed(b) => {
                         let NamedExport {
@@ -324,7 +311,7 @@ impl ReactCodgen {
                     swc_ecmascript::ast::ModuleDecl::TsNamespaceExport(_) => todo!(),
                 },
                 swc_ecmascript::ast::ModuleItem::Stmt(a) => {
-                    mstring = mstring + &self.parse_stmt(a.to_owned())
+                    mstring = format!("{}{}", mstring, &self.parse_stmt(a.to_owned()))
                 }
             };
         }
