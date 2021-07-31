@@ -1,9 +1,7 @@
-use swc_ecmascript::{
-    ast::{
-        ClassDecl, Decl, ExportDecl, FnDecl, Function, ImportDecl, Module, ModuleItem, NamedExport,
-        Param,
-    },
-    common::Span,
+use swc_common::Span;
+use swc_ecmascript::ast::{
+    ClassDecl, Decl, ExportDecl, FnDecl, Function, ImportDecl, Module, ModuleItem, NamedExport,
+    Param,
 };
 #[derive(Debug, PartialEq, Eq)]
 pub struct ReactCodgen {
