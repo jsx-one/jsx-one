@@ -1,9 +1,8 @@
-use swc_common::{
+use swc_ecmascript::common::{
     errors::{ColorConfig, Handler},
     sync::Lrc,
     FileName, SourceMap,
 };
-
 use swc_ecmascript::parser::{lexer::Lexer, Capturing, Parser, StringInput, Syntax};
 
 use crate::codegen::react::ReactCodgen;

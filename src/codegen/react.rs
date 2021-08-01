@@ -1,9 +1,5 @@
-use swc_common::Span;
-use swc_ecmascript::ast::{
-    BindingIdent, BlockStmt, ClassDecl, Decl, ExportDecl, FnDecl, Function, ImportDecl, Module,
-    ModuleItem, NamedExport, Param, Stmt, TsKeywordTypeKind, TsType, VarDecl, VarDeclKind,
-    VarDeclarator,
-};
+use swc_ecmascript::common::Span;
+use swc_ecmascript::ast::{ArrayLit, BindingIdent, BlockStmt, ClassDecl, Decl, ExportDecl, Expr, ExprOrSpread, FnDecl, Function, Ident, ImportDecl, MemberExpr, Module, ModuleItem, NamedExport, ObjectLit, Param, PropOrSpread, ReturnStmt, Stmt, TsKeywordTypeKind, TsType, VarDecl, VarDeclKind, VarDeclarator};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Helper {}
@@ -14,13 +10,13 @@ impl Helper {
     pub fn parse_bindingident(&self, bident: BindingIdent) -> String {
         let mut mstring = String::new();
         let BindingIdent { id, type_ann } = bident;
-        mstring = format!("{} {}", mstring, &id.sym);
-        match type_ann {
+        mstring = mstring +" " +&id.sym;
+        match type_ann { 
             Some(a) => {
                 let type_ann = a.type_ann;
-                mstring = mstring + ": " + &self.parse_ts_type(type_ann);
+                mstring = mstring + ": " + &self.parse_ts_type(type_ann) + " = ";
             }
-            None => todo!(),
+            None => {},
         }
         mstring
     }
@@ -29,18 +25,18 @@ impl Helper {
         match *tstype {
             TsType::TsKeywordType(a) => match a.kind {
                 TsKeywordTypeKind::TsAnyKeyword => mstring = format!("{}any", mstring),
-                TsKeywordTypeKind::TsUnknownKeyword => todo!(),
+                TsKeywordTypeKind::TsUnknownKeyword => mstring = format!("{}unknown", mstring),
                 TsKeywordTypeKind::TsNumberKeyword => mstring = format!("{}number", mstring),
-                TsKeywordTypeKind::TsObjectKeyword => todo!(),
-                TsKeywordTypeKind::TsBooleanKeyword => todo!(),
-                TsKeywordTypeKind::TsBigIntKeyword => todo!(),
-                TsKeywordTypeKind::TsStringKeyword => todo!(),
-                TsKeywordTypeKind::TsSymbolKeyword => todo!(),
-                TsKeywordTypeKind::TsVoidKeyword => todo!(),
-                TsKeywordTypeKind::TsUndefinedKeyword => todo!(),
-                TsKeywordTypeKind::TsNullKeyword => todo!(),
-                TsKeywordTypeKind::TsNeverKeyword => todo!(),
-                TsKeywordTypeKind::TsIntrinsicKeyword => todo!(),
+                TsKeywordTypeKind::TsObjectKeyword => mstring = format!("{}object", mstring),
+                TsKeywordTypeKind::TsBooleanKeyword => mstring = format!("{}boolean", mstring),
+                TsKeywordTypeKind::TsBigIntKeyword => mstring = format!("{}bigint", mstring),
+                TsKeywordTypeKind::TsStringKeyword => mstring = format!("{}string", mstring),
+                TsKeywordTypeKind::TsSymbolKeyword => mstring = format!("{}symbol", mstring),
+                TsKeywordTypeKind::TsVoidKeyword => mstring = format!("{}void", mstring),
+                TsKeywordTypeKind::TsUndefinedKeyword => mstring = format!("{}undefined", mstring),
+                TsKeywordTypeKind::TsNullKeyword => mstring = format!("{}null", mstring),
+                TsKeywordTypeKind::TsNeverKeyword => mstring = format!("{}never", mstring),
+                TsKeywordTypeKind::TsIntrinsicKeyword => mstring = format!("{}intrinsic", mstring),
             },
             TsType::TsThisType(_) => todo!(),
             TsType::TsFnOrConstructorType(_) => todo!(),
@@ -173,7 +169,96 @@ impl ReactCodgen {
             }
             None => todo!(),
         }
+
         mstring = format!("{}}}", mstring);
+        mstring
+    }
+    fn parse_expr(&self, expr: Expr) -> String {
+        let mut mstring = String::new();
+        match expr {
+            Expr::This(a) => {
+                mstring = mstring + "this"
+            },
+            Expr::Array(a) => {
+                let ArrayLit { span, elems } = a;
+                let mut i = String::from(" = [");
+                for u in elems.iter(){
+                    match u{
+                        Some(a) => {
+                            let ExprOrSpread { spread, expr } = a;
+                            i = i + &self.parse_expr(*expr.to_owned()) + ","
+                        },
+                        None => todo!(),
+                    }
+                }
+                mstring = mstring + &i + "]";
+            },
+            Expr::Object(a) => {
+                let ObjectLit { span, props } = a;
+                let mut i = String::from(" = [");
+                for u in props.iter(){
+                    match u{
+                        PropOrSpread::Spread(a) => {
+                            
+                        },
+                        PropOrSpread::Prop(a) => {
+
+                        },
+                    }
+                }
+                mstring = mstring + &i + "]";
+            },
+            Expr::Fn(_) => todo!(),
+            Expr::Unary(_) => todo!(),
+            Expr::Update(_) => todo!(),
+            Expr::Bin(_) => todo!(),
+            Expr::Assign(_) => todo!(),
+            Expr::Member(a) => {
+                let MemberExpr { span, obj, prop, computed } = a;
+                match obj{
+                    swc_ecmascript::ast::ExprOrSuper::Super(a) => mstring = mstring + "super",
+                    swc_ecmascript::ast::ExprOrSuper::Expr(_) => mstring = mstring + "this",
+                }
+                mstring  = mstring + "." + &self.parse_expr(*prop);
+            },
+            Expr::Cond(_) => todo!(),
+            Expr::Call(_) => todo!(),
+            Expr::New(_) => todo!(),
+            Expr::Seq(_) => todo!(),
+            Expr::Ident(a) => {
+                let Ident { span, sym, optional } = a;
+                mstring = format!("{}{}", mstring, sym)
+            },
+            Expr::Lit(a) => match a {
+                swc_ecmascript::ast::Lit::Str(a) => mstring = format!("{}\"{}\"", mstring, a.value),
+                swc_ecmascript::ast::Lit::Bool(_) => todo!(),
+                swc_ecmascript::ast::Lit::Null(a) => mstring = format!("{}{}", mstring, "null"),
+                swc_ecmascript::ast::Lit::Num(a) => mstring = format!("{}{}", mstring, a.value),
+                swc_ecmascript::ast::Lit::BigInt(_) => todo!(),
+                swc_ecmascript::ast::Lit::Regex(_) => todo!(),
+                swc_ecmascript::ast::Lit::JSXText(_) => todo!(),
+            },
+            Expr::Tpl(_) => todo!(),
+            Expr::TaggedTpl(_) => todo!(),
+            Expr::Arrow(_) => todo!(),
+            Expr::Class(_) => todo!(),
+            Expr::Yield(_) => todo!(),
+            Expr::MetaProp(_) => todo!(),
+            Expr::Await(_) => todo!(),
+            Expr::Paren(_) => todo!(),
+            Expr::JSXMember(_) => todo!(),
+            Expr::JSXNamespacedName(_) => todo!(),
+            Expr::JSXEmpty(_) => todo!(),
+            Expr::JSXElement(_) => todo!(),
+            Expr::JSXFragment(_) => todo!(),
+            Expr::TsTypeAssertion(_) => todo!(),
+            Expr::TsConstAssertion(_) => todo!(),
+            Expr::TsNonNull(_) => todo!(),
+            Expr::TsAs(_) => todo!(),
+            Expr::PrivateName(_) => todo!(),
+            Expr::OptChain(_) => todo!(),
+            Expr::Invalid(_) => todo!(),
+        }
         mstring
     }
     fn parse_var_decl(&self, vardecl: VarDeclarator) -> String {
@@ -186,7 +271,8 @@ impl ReactCodgen {
         } = vardecl;
         match name {
             swc_ecmascript::ast::Pat::Ident(a) => {
-                mstring = format!("{}{}", mstring, &self.helper.parse_bindingident(a));
+                mstring = format!("{}{}", mstring, self.helper.parse_bindingident(a));
+
             }
             swc_ecmascript::ast::Pat::Array(_) => todo!(),
             swc_ecmascript::ast::Pat::Rest(_) => todo!(),
@@ -194,6 +280,10 @@ impl ReactCodgen {
             swc_ecmascript::ast::Pat::Assign(_) => todo!(),
             swc_ecmascript::ast::Pat::Invalid(_) => todo!(),
             swc_ecmascript::ast::Pat::Expr(_) => todo!(),
+        };
+        match init {
+            Some(a) => mstring = mstring + &self.parse_expr(*a) + ";\n",
+            None => todo!(),
         }
         mstring
     }
@@ -209,7 +299,8 @@ impl ReactCodgen {
             VarDeclKind::Var => mstring = format!("{}var", mstring),
             VarDeclKind::Let => mstring = format!("{}let", mstring),
             VarDeclKind::Const => mstring = format!("{}const", mstring),
-        }
+        };
+
         for i in decls.iter() {
             mstring = format!("{}{}", mstring, self.parse_var_decl(i.to_owned()));
         }
@@ -249,14 +340,29 @@ impl ReactCodgen {
         }
         mstring
     }
+    fn parse_ret_statement(&self, ret: ReturnStmt) -> String{
+        let mut mstring = String::new();
+        let ReturnStmt { span, arg } = ret;
+        match arg{
+            Some(a) => {
+                mstring = format!("{}return {};", mstring, self.parse_expr(*a))
+            },
+            None => todo!(),
+        }
+        mstring
+    }
     fn parse_stmt(&self, stmt: Stmt) -> String {
         let mut mstring = String::new();
         match stmt {
-            swc_ecmascript::ast::Stmt::Block(_) => todo!(),
+            swc_ecmascript::ast::Stmt::Block(a) => {
+                mstring = format!("{}{}", mstring, self.parse_block(a))
+            }
             swc_ecmascript::ast::Stmt::Empty(_) => todo!(),
             swc_ecmascript::ast::Stmt::Debugger(_) => todo!(),
             swc_ecmascript::ast::Stmt::With(_) => todo!(),
-            swc_ecmascript::ast::Stmt::Return(_) => todo!(),
+            swc_ecmascript::ast::Stmt::Return(a) => {
+                mstring = format!("{}{}", mstring, self.parse_ret_statement(a))
+            },
             swc_ecmascript::ast::Stmt::Labeled(_) => todo!(),
             swc_ecmascript::ast::Stmt::Break(_) => todo!(),
             swc_ecmascript::ast::Stmt::Continue(_) => todo!(),
@@ -272,7 +378,10 @@ impl ReactCodgen {
             swc_ecmascript::ast::Stmt::Decl(decl) => {
                 mstring = format!("{}{}", mstring, &self.parse_decl(&decl));
             }
-            swc_ecmascript::ast::Stmt::Expr(_) => todo!(),
+            swc_ecmascript::ast::Stmt::Expr(a) => {
+                let a = a.expr;
+                mstring = mstring + &self.parse_expr(*a)
+            },
         }
         mstring
     }

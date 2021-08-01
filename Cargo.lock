@@ -30,6 +30,7 @@ checksum = "23b62fc65de8e4e7f52534fb52b0f3ed04746ae267519eef2a83941e8085068b"
 [[package]]
 name = "ast_node"
 version = "0.7.3"
+source = "git+https://github.com/jsx-one/parser#407be5d8f0606ae3a4a66038ae4f50a3f7c7fa91"
 dependencies = [
  "darling",
  "pmutil",
@@ -124,6 +125,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "enum_kind"
 version = "0.2.1"
+source = "git+https://github.com/jsx-one/parser#407be5d8f0606ae3a4a66038ae4f50a3f7c7fa91"
 dependencies = [
  "pmutil",
  "proc-macro2",
@@ -140,6 +142,7 @@ checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 [[package]]
 name = "from_variant"
 version = "0.1.3"
+source = "git+https://github.com/jsx-one/parser#407be5d8f0606ae3a4a66038ae4f50a3f7c7fa91"
 dependencies = [
  "pmutil",
  "proc-macro2",
@@ -199,7 +202,6 @@ dependencies = [
 name = "jsx-one"
 version = "0.0.1"
 dependencies = [
- "swc_common",
  "swc_ecmascript",
 ]
 
@@ -517,6 +519,7 @@ dependencies = [
 [[package]]
 name = "string_enum"
 version = "0.3.1"
+source = "git+https://github.com/jsx-one/parser#407be5d8f0606ae3a4a66038ae4f50a3f7c7fa91"
 dependencies = [
  "pmutil",
  "proc-macro2",
@@ -534,6 +537,7 @@ checksum = "6446ced80d6c486436db5c078dde11a9f73d42b57fb273121e160b84f63d894c"
 [[package]]
 name = "swc_atoms"
 version = "0.2.6"
+source = "git+https://github.com/jsx-one/parser#407be5d8f0606ae3a4a66038ae4f50a3f7c7fa91"
 dependencies = [
  "string_cache",
  "string_cache_codegen",
@@ -542,6 +546,7 @@ dependencies = [
 [[package]]
 name = "swc_common"
 version = "0.11.0"
+source = "git+https://github.com/jsx-one/parser#407be5d8f0606ae3a4a66038ae4f50a3f7c7fa91"
 dependencies = [
  "ast_node",
  "atty",
@@ -565,6 +570,7 @@ dependencies = [
 [[package]]
 name = "swc_ecma_ast"
 version = "0.49.0"
+source = "git+https://github.com/jsx-one/parser#407be5d8f0606ae3a4a66038ae4f50a3f7c7fa91"
 dependencies = [
  "is-macro",
  "num-bigint",
@@ -577,6 +583,7 @@ dependencies = [
 [[package]]
 name = "swc_ecma_parser"
 version = "0.63.0"
+source = "git+https://github.com/jsx-one/parser#407be5d8f0606ae3a4a66038ae4f50a3f7c7fa91"
 dependencies = [
  "either",
  "enum_kind",
@@ -596,6 +603,7 @@ dependencies = [
 [[package]]
 name = "swc_ecma_visit"
 version = "0.35.0"
+source = "git+https://github.com/jsx-one/parser#407be5d8f0606ae3a4a66038ae4f50a3f7c7fa91"
 dependencies = [
  "num-bigint",
  "swc_atoms",
@@ -607,6 +615,7 @@ dependencies = [
 [[package]]
 name = "swc_ecmascript"
 version = "0.46.0"
+source = "git+https://github.com/jsx-one/parser#407be5d8f0606ae3a4a66038ae4f50a3f7c7fa91"
 dependencies = [
  "swc_common",
  "swc_ecma_ast",
@@ -617,6 +626,7 @@ dependencies = [
 [[package]]
 name = "swc_eq_ignore_macros"
 version = "0.1.0"
+source = "git+https://github.com/jsx-one/parser#407be5d8f0606ae3a4a66038ae4f50a3f7c7fa91"
 dependencies = [
  "pmutil",
  "proc-macro2",
@@ -627,6 +637,7 @@ dependencies = [
 [[package]]
 name = "swc_macros_common"
 version = "0.3.3"
+source = "git+https://github.com/jsx-one/parser#407be5d8f0606ae3a4a66038ae4f50a3f7c7fa91"
 dependencies = [
  "pmutil",
  "proc-macro2",
@@ -637,6 +648,7 @@ dependencies = [
 [[package]]
 name = "swc_visit"
 version = "0.2.4"
+source = "git+https://github.com/jsx-one/parser#407be5d8f0606ae3a4a66038ae4f50a3f7c7fa91"
 dependencies = [
  "either",
  "swc_visit_macros",
@@ -645,6 +657,7 @@ dependencies = [
 [[package]]
 name = "swc_visit_macros"
 version = "0.2.3"
+source = "git+https://github.com/jsx-one/parser#407be5d8f0606ae3a4a66038ae4f50a3f7c7fa91"
 dependencies = [
  "Inflector",
  "pmutil",
