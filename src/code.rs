@@ -1,20 +1,36 @@
-use swc_ecmascript::common::{
-    errors::{ColorConfig, Handler},
-    sync::Lrc,
-    FileName, SourceMap,
-};
 use swc_ecmascript::parser::{lexer::Lexer, Capturing, Parser, StringInput, Syntax};
+use swc_ecmascript::{
+    common::{
+        errors::{ColorConfig, Handler},
+        sync::Lrc,
+        FileName, SourceMap,
+    },
+    parser::{EsConfig, TsConfig},
+};
 
 use crate::codegen::react::ReactCodgen;
 
 pub fn code(st: &str) {
     let cm: Lrc<SourceMap> = Default::default();
     let handler = Handler::with_tty_emitter(ColorConfig::Auto, true, false, Some(cm.clone()));
+    let tsconfig = TsConfig {
+        tsx: true,
+        decorators: true,
+        dynamic_import: true,
+        dts: true,
+        import_assertions: true,
+        no_early_errors: false,
+    };
+    // Real usage
+    // let fm = cm
+    //     .load_file(Path::new("test.js"))
+    //     .expect("failed to load test.js");
     let fm = cm.new_source_file(FileName::Custom("test.js".into()), st.into());
-
     let lexer = Lexer::new(
-        Syntax::Typescript(Default::default()),
-        Default::default(),
+        // We want to parse ecmascript
+        Syntax::Typescript(tsconfig),
+        // JscTarget defaults to es5
+        swc_ecmascript::ast::EsVersion::Es5,
         StringInput::from(&*fm),
         None,
     );
@@ -33,5 +49,5 @@ pub fn code(st: &str) {
         .expect("Failed to parse module.");
     let reactcodegen = ReactCodgen::new(module.clone());
     let i = reactcodegen.parse_react();
-    println!(" {:#?} {}", &module, i)
+    println!("{:#?} {}", reactcodegen, i)
 }

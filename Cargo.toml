@@ -13,8 +13,8 @@ readme="README.md"
 
 [dependencies]
 swc_ecmascript = {git="https://github.com/jsx-one/parser", features=["parser"], version="0.46.0"}
-[profile.release]
-opt-level = 'z'
-lto = true
-codegen-units = 1
-panic = 'abort'
+#[profile.release]
+#opt-level = 'z'
+#lto = true
+#codegen-units = 1
+#panic = 'abort'
