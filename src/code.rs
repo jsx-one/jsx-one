@@ -5,7 +5,7 @@ use swc_ecmascript::{
         sync::Lrc,
         FileName, SourceMap,
     },
-    parser::{EsConfig, TsConfig},
+    parser::TsConfig,
 };
 
 use crate::codegen::react::ReactCodgen;
@@ -50,4 +50,5 @@ pub fn code(st: &str) {
     let reactcodegen = ReactCodgen::new(module.clone());
     let i = reactcodegen.parse_react();
     println!("{:#?} {}", reactcodegen, i)
+    // println!(" {}", i)
 }

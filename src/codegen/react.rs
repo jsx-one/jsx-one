@@ -1,10 +1,9 @@
 use swc_ecmascript::ast::{
-    ArrayLit, BindingIdent, BlockStmt, ClassDecl, Decl, ExportDecl, Expr, ExprOrSpread, FnDecl,
-    Function, Ident, ImportDecl, JSXAttr, JSXAttrName, JSXAttrOrSpread, JSXClosingElement,
-    JSXElement, JSXElementName, JSXExpr, JSXExprContainer, JSXOpeningElement, JSXText,
-    KeyValueProp, MemberExpr, Module, ModuleItem, NamedExport, ObjectLit, Param, ParenExpr,
-    PropOrSpread, ReturnStmt, Stmt, Str, TsKeywordTypeKind, TsType, VarDecl, VarDeclKind,
-    VarDeclarator,
+    ArrayLit, BindingIdent, BlockStmt, Decl, ExportDecl, Expr, ExprOrSpread, FnDecl, Function,
+    Ident, ImportDecl, JSXAttr, JSXAttrName, JSXAttrOrSpread, JSXClosingElement, JSXElement,
+    JSXElementName, JSXExpr, JSXExprContainer, JSXOpeningElement, JSXText, KeyValueProp,
+    MemberExpr, Module, ModuleItem, NamedExport, ObjectLit, Param, ParenExpr, PropOrSpread,
+    ReturnStmt, Stmt, Str, TsKeywordTypeKind, TsType, VarDecl, VarDeclKind, VarDeclarator,
 };
 use swc_ecmascript::common::Span;
 
@@ -14,6 +13,7 @@ impl Helper {
     pub fn new() -> Self {
         Self {}
     }
+
     pub fn parse_bindingident(&self, bident: BindingIdent) -> String {
         let mut mstring = String::new();
         let BindingIdent { id, type_ann } = bident;
@@ -90,6 +90,111 @@ impl ReactCodgen {
             mods,
             helper: Helper::new(),
         }
+    }
+    pub fn parse_jsx(&self, a: Box<JSXElement>) -> String {
+        let mut mstring = String::new();
+        let JSXElement {
+            span,
+            opening,
+            children,
+            closing,
+        } = *a;
+
+        let JSXOpeningElement {
+            name,
+            span,
+            attrs,
+            self_closing,
+            type_args,
+        } = opening;
+        match name {
+            JSXElementName::Ident(a) => {
+                let Ident {
+                    span,
+                    sym,
+                    optional,
+                } = a;
+                mstring = format!("{}<{} ", mstring, sym)
+            }
+            JSXElementName::JSXMemberExpr(b) => todo!(),
+            JSXElementName::JSXNamespacedName(c) => todo!(),
+        }
+        for attr in attrs.iter() {
+            match attr {
+                JSXAttrOrSpread::JSXAttr(a) => {
+                    let JSXAttr { span, name, value } = a;
+                    match name {
+                        JSXAttrName::Ident(a) => {
+                            mstring = format!(" {}{}", mstring, a.sym);
+                            match value {
+                                Some(a) => match a {
+                                    swc_ecmascript::ast::JSXAttrValue::Lit(_) => todo!(),
+                                    swc_ecmascript::ast::JSXAttrValue::JSXExprContainer(a) => {
+                                        let JSXExprContainer { span, expr } = a;
+                                        match expr {
+                                            JSXExpr::JSXEmptyExpr(a) => todo!(),
+                                            JSXExpr::Expr(a) => {
+                                                let parsed_expr =
+                                                    self.parse_expr(*a.to_owned(), true);
+
+                                                mstring = format!("{}{}", mstring, parsed_expr)
+                                            }
+                                        }
+                                    }
+                                    swc_ecmascript::ast::JSXAttrValue::JSXElement(_) => {
+                                        todo!()
+                                    }
+                                    swc_ecmascript::ast::JSXAttrValue::JSXFragment(_) => {
+                                        todo!()
+                                    }
+                                },
+                                None => todo!(),
+                            }
+                        }
+                        JSXAttrName::JSXNamespacedName(_) => todo!(),
+                    }
+                }
+                JSXAttrOrSpread::SpreadElement(_) => todo!(),
+            }
+        }
+        if self_closing {
+            mstring = format!("{}{}", mstring, "/>")
+        } else {
+            mstring = format!("{}{}", mstring, ">")
+        }
+        for child in children.iter() {
+            match child {
+                swc_ecmascript::ast::JSXElementChild::JSXText(a) => {
+                    let JSXText { span, value, raw } = a;
+                    mstring = format!("{}{}", mstring, value)
+                }
+                swc_ecmascript::ast::JSXElementChild::JSXExprContainer(_) => todo!(),
+                swc_ecmascript::ast::JSXElementChild::JSXSpreadChild(_) => todo!(),
+                swc_ecmascript::ast::JSXElementChild::JSXElement(a) => {
+                    mstring = format!("{}{}", mstring, self.parse_jsx(a.to_owned()))
+                }
+                swc_ecmascript::ast::JSXElementChild::JSXFragment(_) => todo!(),
+            }
+        }
+        match closing {
+            Some(a) => {
+                let JSXClosingElement { span, name } = a;
+                match name {
+                    JSXElementName::Ident(a) => {
+                        let Ident {
+                            span,
+                            sym,
+                            optional,
+                        } = a;
+                        mstring = mstring + "</" + &sym + ">";
+                    }
+                    JSXElementName::JSXMemberExpr(_) => todo!(),
+                    JSXElementName::JSXNamespacedName(_) => todo!(),
+                }
+            }
+            None => todo!(),
+        }
+        mstring
     }
     fn parse_import(&self, import: ImportDecl) -> String {
         let mut stri = String::new();
@@ -312,110 +417,7 @@ impl ReactCodgen {
             Expr::JSXMember(_) => todo!(),
             Expr::JSXNamespacedName(_) => todo!(),
             Expr::JSXEmpty(_) => todo!(),
-            Expr::JSXElement(a) => {
-                let JSXElement {
-                    span,
-                    opening,
-                    children,
-                    closing,
-                } = *a;
-
-                let JSXOpeningElement {
-                    name,
-                    span,
-                    attrs,
-                    self_closing,
-                    type_args,
-                } = opening;
-                match name {
-                    JSXElementName::Ident(a) => {
-                        let Ident {
-                            span,
-                            sym,
-                            optional,
-                        } = a;
-                        mstring = format!("{}<{} ", mstring, sym)
-                    }
-                    JSXElementName::JSXMemberExpr(b) => todo!(),
-                    JSXElementName::JSXNamespacedName(c) => todo!(),
-                }
-                for attr in attrs.iter() {
-                    match attr {
-                        JSXAttrOrSpread::JSXAttr(a) => {
-                            let JSXAttr { span, name, value } = a;
-                            match name {
-                                JSXAttrName::Ident(a) => {
-                                    mstring = format!(" {}{}", mstring, a.sym);
-                                    match value {
-                                        Some(a) => match a {
-                                            swc_ecmascript::ast::JSXAttrValue::Lit(_) => todo!(),
-                                            swc_ecmascript::ast::JSXAttrValue::JSXExprContainer(
-                                                a,
-                                            ) => {
-                                                let JSXExprContainer { span, expr } = a;
-                                                match expr {
-                                                    JSXExpr::JSXEmptyExpr(a) => todo!(),
-                                                    JSXExpr::Expr(a) => {
-                                                        let parsed_expr =
-                                                            self.parse_expr(*a.to_owned(), true);
-
-                                                        mstring =
-                                                            format!("{}{}", mstring, parsed_expr)
-                                                    }
-                                                }
-                                            }
-                                            swc_ecmascript::ast::JSXAttrValue::JSXElement(_) => {
-                                                todo!()
-                                            }
-                                            swc_ecmascript::ast::JSXAttrValue::JSXFragment(_) => {
-                                                todo!()
-                                            }
-                                        },
-                                        None => todo!(),
-                                    }
-                                }
-                                JSXAttrName::JSXNamespacedName(_) => todo!(),
-                            }
-                        }
-                        JSXAttrOrSpread::SpreadElement(_) => todo!(),
-                    }
-                }
-                if self_closing {
-                    mstring = format!("{}{}", mstring, "/>")
-                } else {
-                    mstring = format!("{}{}", mstring, ">")
-                }
-                for child in children.iter() {
-                    match child {
-                        swc_ecmascript::ast::JSXElementChild::JSXText(a) => {
-                            let JSXText { span, value, raw } = a;
-                            mstring = format!("{}{}", mstring, value)
-                        }
-                        swc_ecmascript::ast::JSXElementChild::JSXExprContainer(_) => todo!(),
-                        swc_ecmascript::ast::JSXElementChild::JSXSpreadChild(_) => todo!(),
-                        swc_ecmascript::ast::JSXElementChild::JSXElement(_) => todo!(),
-                        swc_ecmascript::ast::JSXElementChild::JSXFragment(_) => todo!(),
-                    }
-                }
-                match closing {
-                    Some(a) => {
-                        let JSXClosingElement { span, name } = a;
-                        match name {
-                            JSXElementName::Ident(a) => {
-                                let Ident {
-                                    span,
-                                    sym,
-                                    optional,
-                                } = a;
-                                mstring = format!("{}</{}>", mstring, sym)
-                            }
-                            JSXElementName::JSXMemberExpr(_) => todo!(),
-                            JSXElementName::JSXNamespacedName(_) => todo!(),
-                        }
-                    }
-                    None => todo!(),
-                }
-            }
+            Expr::JSXElement(a) => mstring = format!("{}{}", mstring, self.parse_jsx(a)),
             Expr::JSXFragment(_) => todo!(),
             Expr::TsTypeAssertion(_) => todo!(),
             Expr::TsConstAssertion(_) => todo!(),
