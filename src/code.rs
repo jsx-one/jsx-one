@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use swc_ecmascript::parser::{lexer::Lexer, Capturing, Parser, StringInput, Syntax};
 use swc_ecmascript::{
     common::{
@@ -11,6 +13,8 @@ use swc_ecmascript::{
 use crate::codegen::react::ReactCodgen;
 
 pub fn code(st: &str) {
+    let now = Instant::now();
+
     let cm: Lrc<SourceMap> = Default::default();
     let handler = Handler::with_tty_emitter(ColorConfig::Auto, true, false, Some(cm.clone()));
     let tsconfig = TsConfig {
@@ -49,6 +53,7 @@ pub fn code(st: &str) {
         .expect("Failed to parse module.");
     let reactcodegen = ReactCodgen::new(module.clone());
     let i = reactcodegen.parse_react();
-    println!("{:#?} {}", reactcodegen, i)
+    println!("{:#?}", reactcodegen);
     // println!(" {}", i)
+    println!("{}", now.elapsed().as_secs());
 }
