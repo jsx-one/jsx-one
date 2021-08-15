@@ -12,7 +12,7 @@ use swc_ecmascript::{
 
 use crate::codegen::react::ReactCodgen;
 
-pub fn code(st: &str) {
+pub fn code(st: &str) -> String {
     let now = Instant::now();
 
     let cm: Lrc<SourceMap> = Default::default();
@@ -55,5 +55,6 @@ pub fn code(st: &str) {
     let i = reactcodegen.parse_react();
     println!("{:#?}", reactcodegen);
     // println!(" {}", i)
-    println!("{}", now.elapsed().as_secs());
+    // println!("{}", now.elapsed().as_secs());
+    i
 }
